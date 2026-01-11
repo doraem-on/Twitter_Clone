@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../../models/user.model';
+import User from '../../models/user.model.js';
 
 export const generateToken = (UserId, res) => {
     const token = jwt.sign({ id: UserId }, process.env.JWT_SECRET, {
@@ -10,6 +10,9 @@ export const generateToken = (UserId, res) => {
         maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
         httpOnly: true,
         sameSite: "strict",
-        secure : process.env.NODE_ENV === "Development",
+        secure : process.env.NODE_ENV === "production",
     });
+
+    
 };
+export default generateToken;

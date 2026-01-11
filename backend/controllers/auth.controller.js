@@ -1,10 +1,11 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import generateToken from "../lib/utils/generateToken.js";
 
 
 export const signup = async(req, res) => {
     try{
-        const { fullname, username, email, password } = req.body;
+        const { fullName, username, email, password } = req.body;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if(!emailRegex.test(email)){
@@ -21,27 +22,31 @@ export const signup = async(req, res) => {
             return res.status(400).json({ error: "Email already registered" });
         }
 
+        if(password.length < 6){
+            return res.status(400).json({ error: "Password must be at least 6 characters long" });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({
-            fullname,
+            fullName,
             username,
             email,
             password: hashedPassword
         });
 
         if(newUser){
-            generateTokenAndRespond(newUser,_id, res);
             await newUser.save();
+            generateToken(newUser._id, res);
+            
 
             res.status(201).json({
                 _id: newUser._id,
-                fullname: newUser.fullname,
+                fullName: newUser.fullName,
                 username: newUser.username,
                 email: newUser.email,
                 followers: newUser.followers,
                 following: newUser.following,
                 profileImage: newUser.profileImage,
-                CoverImage: newUser.CoverImage,
+                coverImage: newUser.coverImage,
             })
         } else {
             res.status(400).json({ error: "Invalid user data"});
