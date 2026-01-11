@@ -10,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 console.log('MONGO_URI:', process.env.MONGO_URI);
 
+app.use(express.json()); // Middleware to parse JSON bodies
 app.use("/api/auth", authRoutes);
 
 
