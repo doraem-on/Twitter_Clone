@@ -60,13 +60,47 @@ export const signup = async(req, res) => {
 };
 
 export const login = async(req, res) => {
-    res.json({ 
-        data: "Login route" 
-    });
+    try{
+        const {username, password} =  req.body;
+        const user = await User.findOne({username});
+        const passwordMatch = user ? await bcrypt.compare(password, user?.password || "") : false;
+        
+        if(!user || !passwordMatch){
+            return res.status(401).json({ error: "Invalid username or password"});
+        }
+
+        generateToken (user._id, res);
+
+        res.status(200).json({
+            _id: user._id,
+            fullName: user.fullName,
+            username: user.username,
+            email: user.email,
+            followers: user.followers,
+            following: user.following,
+            profileImage: user.profileImage,
+            coverImage: user.coverImage,
+        });
+       
 }
+ catch(error){
+            console.error(error);
+            res.status(500).json({ error: "Server error" });
+        }
+    };
 
 export const logout = async(req, res) => {
-    res.json({ 
-        data: "Logout route" 
-    });
-}
+    try{
+        res.cookie("jwt", "", {
+            maxAge: 0,
+            httpOnly: true,
+            sameSite: "strict",
+            secure : process.env.NODE_ENV === "production",
+        });
+        res.status(200).json({ message: "Logged out successfully" });
+    }catch(error){
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+
+};
